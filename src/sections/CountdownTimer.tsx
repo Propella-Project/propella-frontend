@@ -55,14 +55,14 @@ export function CountdownTimer() {
         key={value}
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="w-20 h-24 md:w-28 md:h-32 bg-gradient-to-br from-[#1A1625] to-[#0F0C15] rounded-2xl border border-white/10 flex items-center justify-center relative overflow-hidden"
+        className="w-14 h-20 sm:w-16 sm:h-24 md:w-28 md:h-32 border-white bg-gradient-to-br from-[#1A1625] to-[#0F0C15] rounded-2xl border border-white/10 flex items-center justify-center relative overflow-hidden"
       >
         <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent" />
-        <span className="text-3xl md:text-5xl font-bold relative z-10 tabular-nums bg-gradient-to-r from-[#8B5CF6] to-[#CCFF00] bg-clip-text text-transparent">
+        <span className="text-2xl sm:text-3xl md:text-5xl font-bold relative z-10 tabular-nums bg-gradient-to-r from-[#8B5CF6] to-[#CCFF00] bg-clip-text text-transparent">
           {value.toString().padStart(2, "0")}
         </span>
       </motion.div>
-      <span className="text-sm text-gray-500 mt-3 uppercase tracking-wider">
+      <span className="text-xs sm:text-sm text-gray-500 mt-2 sm:mt-3 uppercase tracking-wider">
         {label}
       </span>
     </div>
@@ -135,18 +135,18 @@ export function CountdownTimer() {
           ) : (
             <div className="relative">
               <div className="absolute -inset-4 bg-gradient-to-r from-[#8B5CF6]/10 to-[#CCFF00]/10 rounded-3xl blur-xl" />
-              <div className="relative bg-[#1A1625]/50 backdrop-blur-xl rounded-3xl border border-white/10 p-8 md:p-12">
-                <div className="flex justify-center gap-4 md:gap-6">
+              <div className="relative bg-[#1A1625]/50 backdrop-blur-xl rounded-3xl border border-white/10 p-4 sm:p-8 md:p-12 overflow-x-auto">
+                <div className="flex justify-center gap-2 sm:gap-4 md:gap-6">
                   <TimeUnit value={timeLeft.days} label="Days" />
-                  <span className="text-3xl md:text-5xl font-bold text-gray-600 self-start mt-6">
+                  <span className="text-2xl sm:text-3xl md:text-5xl font-bold text-gray-600 self-start mt-4 sm:mt-6">
                     :
                   </span>
                   <TimeUnit value={timeLeft.hours} label="Hours" />
-                  <span className="text-3xl md:text-5xl font-bold text-gray-600 self-start mt-6">
+                  <span className="text-2xl sm:text-3xl md:text-5xl font-bold text-gray-600 self-start mt-4 sm:mt-6">
                     :
                   </span>
                   <TimeUnit value={timeLeft.minutes} label="Minutes" />
-                  <span className="text-3xl md:text-5xl font-bold text-gray-600 self-start mt-6">
+                  <span className="text-2xl sm:text-3xl md:text-5xl font-bold text-gray-600 self-start mt-4 sm:mt-6">
                     :
                   </span>
                   <TimeUnit value={timeLeft.seconds} label="Seconds" />

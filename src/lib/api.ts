@@ -1,5 +1,5 @@
 // PROPELLA API Client
-const API_BASE_URL = ""; // Always empty – use relative URLs (works with Vite proxy & Vercel rewrites)
+const API_BASE_URL = ""; // Always empty – use relative URLs
 
 interface ApiResponse<T = unknown> {
   success: boolean;
@@ -15,20 +15,19 @@ interface LoginResponse {
   refresh: string;
 }
 
-// Type for registration (only email, password, optional username)
+// Type for registration
 interface RegisterData {
   email: string;
   password: string;
   username?: string;
 }
 
-// Type for exam profile creation (adjust according to your backend)
+// Type for exam profile creation
 interface ExamProfileData {
   firstName: string;
   writingJamb: string;
   subjects?: string[];
   phone?: string;
-  // Add other fields as needed
 }
 
 async function apiFetch<T>(
@@ -53,13 +52,39 @@ async function apiFetch<T>(
   try {
     const response = await fetch(url, fetchOptions);
     const data = await response.json().catch(() => ({}));
+
+    // Build a friendly error message if the response is not OK
+    let errorMessage: string | undefined;
+    if (!response.ok) {
+      // Try to extract a meaningful error from the response body
+      if (data.email && Array.isArray(data.email) && data.email.length > 0) {
+        // Field error: e.g., "user with this Email already exists."
+        errorMessage = data.email[0];
+      } else if (data.error) {
+        errorMessage = data.error;
+      } else if (data.message) {
+        errorMessage = data.message;
+      } else if (typeof data === "object" && Object.keys(data).length > 0) {
+        // If there are other field errors, pick the first one
+        const firstField = Object.keys(data).find(
+          (key) => Array.isArray(data[key]) && data[key].length > 0,
+        );
+        if (firstField) {
+          errorMessage = data[firstField][0];
+        } else {
+          // Fallback: stringify the entire error object
+          errorMessage = JSON.stringify(data);
+        }
+      } else {
+        errorMessage = `HTTP ${response.status}`;
+      }
+    }
+
     return {
       success: response.ok,
       message: data.message,
       data: response.ok ? data : undefined,
-      error: response.ok
-        ? undefined
-        : data.error || data.message || `HTTP ${response.status}`,
+      error: errorMessage,
       status: response.status,
     };
   } catch (error) {

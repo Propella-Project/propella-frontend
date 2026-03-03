@@ -29,6 +29,8 @@ const JAMB_SUBJECTS = [
   "Government",
   "Economics",
   "Literature",
+  "Christian Religious Studies",
+  "Islamic Religious Studies",
 ];
 
 export function WaitlistModal({
@@ -95,21 +97,18 @@ export function WaitlistModal({
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
   const handleSendCode = async () => {
     if (!validateForm()) return;
 
     setStep("sending");
 
-    // Generate a random password and store it for later login
     const pwd = Math.random().toString(36).slice(-12) + "A1!";
     setGeneratedPassword(pwd);
 
-    // Register with only email, password, and optional username
     const result = await registerUser({
       email: formData.email,
       password: pwd,
-      username: formData.email.split("@")[0], // optional but helpful
+      username: formData.email.split("@")[0],
     });
 
     if (result.success) {
@@ -118,79 +117,84 @@ export function WaitlistModal({
       setResendTimer(120);
       setCanResend(false);
     } else {
-      toast.error(result.error || "Failed to send verification code");
+      // Check for duplicate email message
+      if (result.error?.toLowerCase().includes("already exists")) {
+        toast.error("You are already registered. Please log in instead.");
+      } else {
+        toast.error(result.error || "Failed to send verification code");
+      }
       setStep("form");
     }
   };
 
- const handleVerify = async () => {
-   const fullCode = verificationCode.join("");
+  const handleVerify = async () => {
+    const fullCode = verificationCode.join("");
 
-   if (fullCode.length !== 6) {
-     toast.error("Please enter the complete 6-digit code");
-     return;
-   }
+    if (fullCode.length !== 6) {
+      toast.error("Please enter the complete 6-digit code");
+      return;
+    }
 
-   setStep("verifying");
+    setStep("verifying");
 
-   // 1. Verify email
-   const verifyResult = await verifyEmail({
-     email: formData.email,
-     code: fullCode,
-   });
+    // 1. Verify email
+    const verifyResult = await verifyEmail({
+      email: formData.email,
+      code: fullCode,
+    });
 
-   if (!verifyResult.success) {
-     toast.error(verifyResult.error || "Invalid verification code");
-     setStep("verify");
-     return;
-   }
+    if (!verifyResult.success) {
+      toast.error(verifyResult.error || "Invalid verification code");
+      setStep("verify");
+      return;
+    }
 
-   // 2. Login to obtain JWT token
-   const loginResult = await login({
-     email: formData.email,
-     password: generatedPassword,
-   });
+    // 2. Login to obtain JWT token
+    const loginResult = await login({
+      email: formData.email,
+      password: generatedPassword,
+    });
 
-   // Check both success and that data exists
-   if (!loginResult.success || !loginResult.data) {
-     toast.error("Auto-login failed. Please try logging in manually.");
-     setStep("verify");
-     return;
-   }
+    // Check both success and that data exists
+    if (!loginResult.success || !loginResult.data) {
+      toast.error("Auto-login failed. Please try logging in manually.");
+      setStep("verify");
+      return;
+    }
 
-   // Store token – TypeScript now knows loginResult.data is defined
-   localStorage.setItem("access_token", loginResult.data.access);
-   localStorage.setItem("refresh_token", loginResult.data.refresh);
+    // Store token – TypeScript now knows loginResult.data is defined
+    localStorage.setItem("access_token", loginResult.data.access);
+    localStorage.setItem("refresh_token", loginResult.data.refresh);
 
-   // 3. Create exam profile with collected extra data
-   const profileResult = await createExamProfile({
-     firstName: formData.firstName,
-     writingJamb: formData.writingJamb,
-     subjects: formData.subjects,
-     phone: formData.phone || undefined,
-   });
+    // 3. Create exam profile with collected extra data
+    const profileResult = await createExamProfile({
+      firstName: formData.firstName,
+      writingJamb: formData.writingJamb,
+      subjects: formData.subjects,
+      phone: formData.phone || undefined,
+    });
 
-   if (!profileResult.success) {
-     toast.error(profileResult.error || "Profile creation failed");
-     // Still consider the user verified but show error
-   }
+    if (!profileResult.success) {
+      toast.error(profileResult.error || "Profile creation failed");
+      // Still consider the user verified but show error
+    }
 
-   // 4. Notify parent and close modal
-   toast.success("Welcome to PROPELLA!");
-   onSuccess(formData.email, formData.firstName);
+    // 4. Notify parent and close modal
+    toast.success("Welcome to PROPELLA!");
+    onSuccess(formData.email, formData.firstName);
 
-   // Reset form
-   setStep("form");
-   setFormData({
-     firstName: "",
-     email: "",
-     writingJamb: "",
-     subjects: [],
-     phone: "",
-   });
-   setVerificationCode(["", "", "", "", "", ""]);
-   setGeneratedPassword("");
- };
+    // Reset form
+    setStep("form");
+    setFormData({
+      firstName: "",
+      email: "",
+      writingJamb: "",
+      subjects: [],
+      phone: "",
+    });
+    setVerificationCode(["", "", "", "", "", ""]);
+    setGeneratedPassword("");
+  };
   const handleResend = async () => {
     const result = await resendCode(formData.email);
 
