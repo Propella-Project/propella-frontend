@@ -45,11 +45,26 @@ export function RocketLogo({ className = "w-8 h-8" }: { className?: string }) {
 
 // Main app content (landing and success pages)
 function AppContent() {
+  const [searchParams] = useSearchParams();
   const [showWaitlistModal, setShowWaitlistModal] = useState(false);
   const [pageState, setPageState] = useState<PageState>("landing");
   const [userEmail, setUserEmail] = useState("");
   const [waitlistCount, setWaitlistCount] = useState(4281);
   const [userName, setUserName] = useState("");
+
+  // Handle referral params - store in localStorage but stay on landing page
+  useEffect(() => {
+    const ref = searchParams.get("ref");
+    const name = searchParams.get("name");
+    const email = searchParams.get("email");
+
+    if (ref && name && email) {
+      localStorage.setItem(
+        "propella_user",
+        JSON.stringify({ email, name, ref }),
+      );
+    }
+  }, [searchParams]);
 
   // Scroll to section handler
   const scrollToSection = (id: string) => {

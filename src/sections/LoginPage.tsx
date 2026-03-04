@@ -28,8 +28,8 @@ export function LoginPage() {
       localStorage.setItem("access_token", result.data.access);
       localStorage.setItem("refresh_token", result.data.refresh);
       toast.success("Login successful!");
-      // Redirect to dashboard or welcome page – adjust as needed
-      navigate("/dashboard"); // or wherever you want
+      // Redirect to welcome page
+      navigate("/welcome");
     } else {
       toast.error(result.error || "Login failed");
     }
@@ -106,4 +106,3 @@ export function LoginPage() {
     </div>
   );
 }
-

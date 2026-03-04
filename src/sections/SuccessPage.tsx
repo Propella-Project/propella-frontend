@@ -87,7 +87,7 @@ export function SuccessPage({
     frame();
   }, []);
 
-const referralLink = `${window.location.origin}/welcome?ref=${referralCode}&name=${encodeURIComponent(userName)}&email=${encodeURIComponent(userEmail)}`;
+  const referralLink = `${window.location.origin}/?ref=${referralCode}&name=${encodeURIComponent(userName)}&email=${encodeURIComponent(userEmail)}`;
   const handleCopy = () => {
     navigator.clipboard.writeText(referralLink);
     setCopied(true);

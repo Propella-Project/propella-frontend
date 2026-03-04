@@ -104,7 +104,6 @@ export function WaitlistModal({
       newErrors.email = "Please enter a valid email";
     }
 
-    // Password validation
     if (!formData.password) {
       newErrors.password = "Password is required";
     } else if (formData.password.length < 8) {
@@ -175,7 +174,7 @@ export function WaitlistModal({
     // 2. Login to obtain JWT token
     const loginResult = await login({
       email: formData.email,
-      password: formData.password, // directly from formData
+      password: formData.password,
     });
 
     if (!loginResult.success || !loginResult.data) {
@@ -197,6 +196,7 @@ export function WaitlistModal({
 
     if (!profileResult.success) {
       toast.error(profileResult.error || "Profile creation failed");
+      // Don't block success — profile can be completed later
     }
 
     toast.success("Welcome to PROPELLA!");
@@ -228,12 +228,14 @@ export function WaitlistModal({
   };
 
   const handleCodeChange = (index: number, value: string) => {
-    if (value.length > 1) return;
+    // Only allow digits
+    if (value && !/^\d$/.test(value)) return;
 
     const newCode = [...verificationCode];
-    newCode[index] = value.toUpperCase();
+    newCode[index] = value;
     setVerificationCode(newCode);
 
+    // Auto-focus next input
     if (value && index < 5) {
       const nextInput = document.getElementById(
         `code-${index + 1}`,
@@ -243,19 +245,38 @@ export function WaitlistModal({
   };
 
   const handleCodeKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === "Backspace" && !verificationCode[index] && index > 0) {
-      const prevInput = document.getElementById(
-        `code-${index - 1}`,
-      ) as HTMLInputElement;
-      prevInput?.focus();
+    if (e.key === "Backspace") {
+      if (verificationCode[index]) {
+        // Clear current field
+        const newCode = [...verificationCode];
+        newCode[index] = "";
+        setVerificationCode(newCode);
+      } else if (index > 0) {
+        // Move to previous field
+        const prevInput = document.getElementById(
+          `code-${index - 1}`,
+        ) as HTMLInputElement;
+        prevInput?.focus();
+      }
     }
   };
 
   const handleCodePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
-    const pasted = e.clipboardData.getData("text").toUpperCase().slice(0, 6);
+    const pasted = e.clipboardData
+      .getData("text")
+      .replace(/\D/g, "")
+      .slice(0, 6);
     const newCode = pasted.split("").concat(Array(6 - pasted.length).fill(""));
     setVerificationCode(newCode);
+
+    // Focus the next empty field or last field
+    const nextEmpty = newCode.findIndex((d) => d === "");
+    const focusIndex = nextEmpty === -1 ? 5 : nextEmpty;
+    const input = document.getElementById(
+      `code-${focusIndex}`,
+    ) as HTMLInputElement;
+    input?.focus();
   };
 
   const toggleSubject = (subject: string) => {
@@ -326,7 +347,7 @@ export function WaitlistModal({
 
           {/* Content */}
           <div className="p-6 space-y-5">
-            {/* Form Step */}
+            {/* ── FORM STEP ── */}
             {step === "form" && (
               <>
                 {/* First Name */}
@@ -430,7 +451,6 @@ export function WaitlistModal({
                       {errors.password}
                     </p>
                   )}
-                  {/* Password Requirements */}
                   <div className="mt-2 space-y-1">
                     <p className="text-xs text-gray-500">Password must have:</p>
                     <ul className="text-xs space-y-1">
@@ -564,22 +584,15 @@ export function WaitlistModal({
                   </div>
                 </div>
 
-                {/* Send Code Button */}
-                {step === "form" && (
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      handleSendCode();
-                    }}
-                    className="space-y-5"
-                  >
-                    {/* All your existing input fields and button */}
-                    <Button type="submit" className="...">
-                      Send Verification Code
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </Button>
-                  </form>
-                )}
+                {/* FIX: Simple button with onClick — no nested form */}
+                <Button
+                  type="button"
+                  onClick={handleSendCode}
+                  className="w-full h-12 bg-gradient-to-r from-[#8B5CF6] to-[#A78BFA] hover:from-[#7C3AED] hover:to-[#8B5CF6] text-white font-semibold rounded-xl flex items-center justify-center gap-2"
+                >
+                  Send Verification Code
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
 
                 <p className="text-xs text-gray-500 text-center">
                   By joining, you agree to receive updates about PROPELLA. We
@@ -588,7 +601,7 @@ export function WaitlistModal({
               </>
             )}
 
-            {/* Sending State */}
+            {/* ── SENDING STATE ── */}
             {step === "sending" && (
               <div className="py-12 flex flex-col items-center">
                 <motion.div
@@ -603,7 +616,7 @@ export function WaitlistModal({
               </div>
             )}
 
-            {/* Verify Code Step */}
+            {/* ── VERIFY CODE STEP ── */}
             {(step === "verify" || step === "verifying") && (
               <>
                 {/* Code Inputs */}
@@ -613,19 +626,22 @@ export function WaitlistModal({
                       key={index}
                       id={`code-${index}`}
                       type="text"
+                      inputMode="numeric"
+                      pattern="\d*"
                       maxLength={1}
                       value={digit}
                       onChange={(e) => handleCodeChange(index, e.target.value)}
                       onKeyDown={(e) => handleCodeKeyDown(index, e)}
                       onPaste={handleCodePaste}
                       disabled={step === "verifying"}
-                      className="w-12 h-14 text-center text-2xl font-bold bg-[#0F0C15] border-2 border-white/10 rounded-xl focus:border-[#8B5CF6] focus:outline-none transition-colors uppercase disabled:opacity-50"
+                      className="w-12 h-14 text-center text-2xl font-bold bg-[#0F0C15] border-2 border-white/10 rounded-xl focus:border-[#8B5CF6] focus:outline-none transition-colors disabled:opacity-50"
                     />
                   ))}
                 </div>
 
                 {/* Verify Button */}
                 <Button
+                  type="button"
                   onClick={handleVerify}
                   disabled={
                     step === "verifying" ||
@@ -650,6 +666,7 @@ export function WaitlistModal({
                   </p>
                   {canResend ? (
                     <button
+                      type="button"
                       onClick={handleResend}
                       className="text-sm text-[#8B5CF6] hover:text-[#A78BFA] transition-colors"
                     >
@@ -667,6 +684,7 @@ export function WaitlistModal({
 
                 {/* Back to Form */}
                 <button
+                  type="button"
                   onClick={() => setStep("form")}
                   className="w-full text-center text-sm text-gray-500 hover:text-white transition-colors"
                 >
