@@ -87,7 +87,7 @@ export function SuccessPage({
     frame();
   }, []);
 
-  const referralLink = `https://frontend-landing-murex.vercel.app/?ref=${referralCode}&name=${encodeURIComponent(userName)}&email=${encodeURIComponent(userEmail)}`;
+  const referralLink = `https://propella-lp.vercel.app/?ref=${referralCode}&name=${encodeURIComponent(userName)}&email=${encodeURIComponent(userEmail)}`;
   const handleCopy = () => {
     navigator.clipboard.writeText(referralLink);
     setCopied(true);

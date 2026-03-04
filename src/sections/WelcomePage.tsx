@@ -60,7 +60,7 @@ export function WelcomePage({ userName, userEmail }: WelcomePageProps) {
   // Redirect when countdown is complete
   useEffect(() => {
     if (isComplete) {
-      window.location.href = "https://frontend-landing-murex.vercel.app/";
+      window.location.href = "https://propella-lp.vercel.app/";
     }
   }, [isComplete]);
 
