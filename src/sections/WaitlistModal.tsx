@@ -49,7 +49,7 @@ export function WaitlistModal({
   isOpen,
   onClose,
   onSuccess,
-  onLoginClick,
+  // onLoginClick,
 }: WaitlistModalProps) {
   const [step, setStep] = useState<"form" | "sending" | "verify" | "verifying">(
     "form",
