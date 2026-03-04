@@ -3,6 +3,7 @@ import {
   Routes,
   Route,
   useSearchParams,
+  // useNavigate,
 } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -13,6 +14,7 @@ import { Features } from "@/sections/Features";
 import { WaitlistModal } from "@/sections/WaitlistModal";
 import { SuccessPage } from "@/sections/SuccessPage";
 import { WelcomePage } from "@/sections/WelcomePage";
+import { LoginPage } from "@/sections/LoginPage";
 import { Toaster } from "@/components/ui/sonner";
 
 export type PageState = "landing" | "success";
@@ -196,6 +198,11 @@ function AppContent() {
       <WaitlistModal
         isOpen={showWaitlistModal}
         onClose={() => setShowWaitlistModal(false)}
+        onLoginClick={() => {
+          setShowWaitlistModal(false);
+          // Navigate to login page
+          window.location.href = "/login";
+        }}
         onSuccess={(email: string, name: string) => {
           setShowWaitlistModal(false);
           handleWaitlistSuccess(email, name);
@@ -229,6 +236,7 @@ function App() {
       <Routes>
         <Route path="/" element={<AppContent />} />
         <Route path="/welcome" element={<WelcomePageWrapper />} />
+        <Route path="/login" element={<LoginPage />} />
       </Routes>
     </BrowserRouter>
   );

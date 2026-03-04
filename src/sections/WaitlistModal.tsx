@@ -1,6 +1,17 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Mail, User, Phone, Check, Loader2, ArrowRight } from "lucide-react";
+import {
+  X,
+  Mail,
+  User,
+  Phone,
+  Check,
+  Loader2,
+  ArrowRight,
+  Lock,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,6 +29,7 @@ interface WaitlistModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: (email: string, name: string) => void;
+  onLoginClick: () => void;
 }
 
 const JAMB_SUBJECTS = [
@@ -37,6 +49,7 @@ export function WaitlistModal({
   isOpen,
   onClose,
   onSuccess,
+  onLoginClick,
 }: WaitlistModalProps) {
   const [step, setStep] = useState<"form" | "sending" | "verify" | "verifying">(
     "form",
@@ -44,6 +57,7 @@ export function WaitlistModal({
   const [formData, setFormData] = useState({
     firstName: "",
     email: "",
+    password: "",
     writingJamb: "",
     subjects: [] as string[],
     phone: "",
@@ -60,6 +74,7 @@ export function WaitlistModal({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [resendTimer, setResendTimer] = useState(120);
   const [canResend, setCanResend] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Resend timer countdown
   useEffect(() => {
@@ -90,6 +105,18 @@ export function WaitlistModal({
       newErrors.email = "Please enter a valid email";
     }
 
+    // Password validation
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+    } else if (formData.password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters";
+    } else if (!/[A-Z]/.test(formData.password)) {
+      newErrors.password =
+        "Password must contain at least one uppercase letter";
+    } else if (!/[0-9]/.test(formData.password)) {
+      newErrors.password = "Password must contain at least one number";
+    }
+
     if (!formData.writingJamb) {
       newErrors.writingJamb = "Please select an option";
     }
@@ -102,7 +129,8 @@ export function WaitlistModal({
 
     setStep("sending");
 
-    const pwd = Math.random().toString(36).slice(-12) + "A1!";
+    // Use the user's provided password instead of generating one
+    const pwd = formData.password;
     setGeneratedPassword(pwd);
 
     const result = await registerUser({
@@ -188,6 +216,7 @@ export function WaitlistModal({
     setFormData({
       firstName: "",
       email: "",
+      password: "",
       writingJamb: "",
       subjects: [],
       phone: "",
@@ -370,6 +399,93 @@ export function WaitlistModal({
                     </p>
                   )}
                 </div>
+
+                {/* Password */}
+                <div>
+                  <Label
+                    htmlFor="password"
+                    className="text-sm font-medium mb-2 block"
+                  >
+                    Password <span className="text-[#EF4444]">*</span>
+                  </Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      value={formData.password}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          password: e.target.value,
+                        }))
+                      }
+                      placeholder="Create a password"
+                      className="pl-10 pr-10 bg-[#0F0C15] border-white/10 focus:border-[#8B5CF6]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+                  {errors.password && (
+                    <p className="text-[#EF4444] text-xs mt-1">
+                      {errors.password}
+                    </p>
+                  )}
+                  {/* Password Requirements */}
+                  <div className="mt-2 space-y-1">
+                    <p className="text-xs text-gray-500">Password must have:</p>
+                    <ul className="text-xs space-y-1">
+                      <li
+                        className={
+                          formData.password.length >= 8
+                            ? "text-green-500"
+                            : "text-gray-500"
+                        }
+                      >
+                        • At least 8 characters
+                      </li>
+                      <li
+                        className={
+                          /[A-Z]/.test(formData.password)
+                            ? "text-green-500"
+                            : "text-gray-500"
+                        }
+                      >
+                        • One uppercase letter (A-Z)
+                      </li>
+                      <li
+                        className={
+                          /[0-9]/.test(formData.password)
+                            ? "text-green-500"
+                            : "text-gray-500"
+                        }
+                      >
+                        • One number (0-9)
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                {/* Login Link */}
+                <p className="text-xs text-gray-500 text-center">
+                  Already have an account?{" "}
+                  <button
+                    type="button"
+                    onClick={onLoginClick}
+                    className="text-[#8B5CF6] hover:text-[#A78BFA] underline"
+                  >
+                    Login
+                  </button>
+                </p>
 
                 {/* Writing JAMB */}
                 <div>
