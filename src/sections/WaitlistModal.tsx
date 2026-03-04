@@ -62,7 +62,6 @@ export function WaitlistModal({
     subjects: [] as string[],
     phone: "",
   });
-  const [generatedPassword, setGeneratedPassword] = useState("");
   const [verificationCode, setVerificationCode] = useState([
     "",
     "",
@@ -124,18 +123,15 @@ export function WaitlistModal({
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+
   const handleSendCode = async () => {
     if (!validateForm()) return;
 
     setStep("sending");
 
-    // Use the user's provided password instead of generating one
-    const pwd = formData.password;
-    setGeneratedPassword(pwd);
-
     const result = await registerUser({
       email: formData.email,
-      password: pwd,
+      password: formData.password,
       username: formData.email.split("@")[0],
     });
 
@@ -145,7 +141,6 @@ export function WaitlistModal({
       setResendTimer(120);
       setCanResend(false);
     } else {
-      // Check for duplicate email message
       if (result.error?.toLowerCase().includes("already exists")) {
         toast.error("You are already registered. Please log in instead.");
       } else {
@@ -180,21 +175,19 @@ export function WaitlistModal({
     // 2. Login to obtain JWT token
     const loginResult = await login({
       email: formData.email,
-      password: generatedPassword,
+      password: formData.password, // directly from formData
     });
 
-    // Check both success and that data exists
     if (!loginResult.success || !loginResult.data) {
       toast.error("Auto-login failed. Please try logging in manually.");
       setStep("verify");
       return;
     }
 
-    // Store token – TypeScript now knows loginResult.data is defined
     localStorage.setItem("access_token", loginResult.data.access);
     localStorage.setItem("refresh_token", loginResult.data.refresh);
 
-    // 3. Create exam profile with collected extra data
+    // 3. Create exam profile
     const profileResult = await createExamProfile({
       firstName: formData.firstName,
       writingJamb: formData.writingJamb,
@@ -204,10 +197,8 @@ export function WaitlistModal({
 
     if (!profileResult.success) {
       toast.error(profileResult.error || "Profile creation failed");
-      // Still consider the user verified but show error
     }
 
-    // 4. Notify parent and close modal
     toast.success("Welcome to PROPELLA!");
     onSuccess(formData.email, formData.firstName);
 
@@ -222,8 +213,8 @@ export function WaitlistModal({
       phone: "",
     });
     setVerificationCode(["", "", "", "", "", ""]);
-    setGeneratedPassword("");
   };
+
   const handleResend = async () => {
     const result = await resendCode(formData.email);
 
@@ -243,7 +234,6 @@ export function WaitlistModal({
     newCode[index] = value.toUpperCase();
     setVerificationCode(newCode);
 
-    // Auto-focus next input
     if (value && index < 5) {
       const nextInput = document.getElementById(
         `code-${index + 1}`,
@@ -575,13 +565,21 @@ export function WaitlistModal({
                 </div>
 
                 {/* Send Code Button */}
-                <Button
-                  onClick={handleSendCode}
-                  className="w-full h-12 bg-gradient-to-r from-[#8B5CF6] to-[#A78BFA] hover:from-[#7C3AED] hover:to-[#8B5CF6] text-white font-semibold rounded-xl"
-                >
-                  Send Verification Code
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
+                {step === "form" && (
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      handleSendCode();
+                    }}
+                    className="space-y-5"
+                  >
+                    {/* All your existing input fields and button */}
+                    <Button type="submit" className="...">
+                      Send Verification Code
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </form>
+                )}
 
                 <p className="text-xs text-gray-500 text-center">
                   By joining, you agree to receive updates about PROPELLA. We
