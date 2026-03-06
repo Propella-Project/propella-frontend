@@ -60,7 +60,7 @@ export function WelcomePage({ userName, userEmail }: WelcomePageProps) {
   // Redirect when countdown is complete
   useEffect(() => {
     if (isComplete) {
-      window.location.href = "https://propella-lp.vercel.app/";
+      window.location.href = "https://propella-dashboard.vercel.app/";
     }
   }, [isComplete]);
 
@@ -159,7 +159,7 @@ export function WelcomePage({ userName, userEmail }: WelcomePageProps) {
         >
           <Button
             onClick={() => {
-              window.location.href = "/";
+              window.location.href = "https://propella-dashboard.vercel.app/";
             }}
             className="h-14 px-8 bg-gradient-to-r from-[#8B5CF6] to-[#A78BFA] hover:from-[#7C3AED] hover:to-[#8B5CF6] text-white font-semibold rounded-xl text-lg"
           >
