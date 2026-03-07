@@ -14,6 +14,8 @@ import { WaitlistModal } from "@/sections/WaitlistModal";
 import { SuccessPage } from "@/sections/SuccessPage";
 import { WelcomePage } from "@/sections/WelcomePage";
 import { LoginPage } from "@/sections/LoginPage";
+import { ForgotPasswordPage } from "@/sections/ForgotPasswordPage";
+import { ResetPasswordPage } from "@/sections/ResetPasswordPage";
 import { Toaster } from "@/components/ui/sonner";
 
 export type PageState = "landing" | "success";
@@ -50,6 +52,7 @@ function AppContent() {
   const [userEmail, setUserEmail] = useState("");
   const [waitlistCount, setWaitlistCount] = useState(4281);
   const [userName, setUserName] = useState("");
+  const [userReferralCode, setUserReferralCode] = useState("");
 
   // Handle referral params - store in localStorage but stay on landing page
   useEffect(() => {
@@ -71,11 +74,12 @@ function AppContent() {
   };
 
   // Handle successful waitlist join
-  const handleWaitlistSuccess = (email: string, name: string) => {
+  const handleWaitlistSuccess = (email: string, name: string, referralCode: string) => {
     setUserEmail(email);
     setUserName(name);
+    setUserReferralCode(referralCode);
     setPageState("success");
-    localStorage.setItem("propella_user", JSON.stringify({ email, name }));
+    localStorage.setItem("propella_user", JSON.stringify({ email, name, ref: referralCode }));
     setWaitlistCount((prev) => prev + 1);
   };
 
@@ -116,7 +120,7 @@ function AppContent() {
                       onClick={() => setShowWaitlistModal(true)}
                       className="px-5 py-2.5 bg-gradient-to-r from-[#8B5CF6] to-[#A78BFA] rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
                     >
-                      Join Waitlist
+                      Sign Up
                     </button>
                   </div>
                 </div>
@@ -155,7 +159,7 @@ function AppContent() {
                       whileTap={{ scale: 0.95 }}
                       className="px-8 py-4 bg-gradient-to-r from-[#8B5CF6] to-[#A78BFA] rounded-xl font-semibold text-lg shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-shadow"
                     >
-                      Join the Waitlist Now
+                      Sign Up Now
                     </motion.button>
                   </motion.div>
                 </div>
@@ -204,6 +208,7 @@ function AppContent() {
             waitlistCount={waitlistCount}
             userEmail={userEmail}
             userName={userName}
+            referralCode={userReferralCode}
             onBackToHome={() => setPageState("landing")}
           />
         )}
@@ -215,11 +220,11 @@ function AppContent() {
         onLoginClick={() => {
           setShowWaitlistModal(false);
           // Navigate to login page
-          window.location.href = "/login";
+          window.location.href = "https://propella.ng";
         }}
-        onSuccess={(email: string, name: string) => {
+        onSuccess={(email: string, name: string, referralCode: string) => {
           setShowWaitlistModal(false);
-          handleWaitlistSuccess(email, name);
+          handleWaitlistSuccess(email, name, referralCode);
         }}
       />
       <Toaster />
@@ -251,6 +256,8 @@ function App() {
         <Route path="/" element={<AppContent />} />
         <Route path="/welcome" element={<WelcomePageWrapper />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
       </Routes>
     </BrowserRouter>
   );

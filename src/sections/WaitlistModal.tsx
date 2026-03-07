@@ -23,12 +23,13 @@ import {
   resendCode,
   login,
   createExamProfile,
+  getUser,
 } from "@/lib/api";
 
 interface WaitlistModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: (email: string, name: string) => void;
+  onSuccess: (email: string, name: string, referralCode: string) => void;
   onLoginClick: () => void;
 }
 
@@ -43,6 +44,11 @@ const JAMB_SUBJECTS = [
   "Literature",
   "Christian Religious Studies",
   "Islamic Religious Studies",
+  "Accounting",
+  "Agricultural Science",
+  "Geography",
+  "Commerce",
+  "History",
 ];
 
 export function WaitlistModal({
@@ -55,7 +61,7 @@ export function WaitlistModal({
     "form",
   );
   const [formData, setFormData] = useState({
-    firstName: "",
+    username: "",
     email: "",
     password: "",
     writingJamb: "",
@@ -73,6 +79,31 @@ export function WaitlistModal({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [resendTimer, setResendTimer] = useState(120);
   const [canResend, setCanResend] = useState(false);
+  const [userReferralCode, setUserReferralCode] = useState<string>("");
+  const [enteredReferralCode, setEnteredReferralCode] = useState<string>("");
+
+  // Get referrer code from URL or localStorage on mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const refFromUrl = urlParams.get("ref");
+
+    if (refFromUrl) {
+      setEnteredReferralCode(refFromUrl);
+    } else {
+      // Check localStorage for stored referral
+      const storedUser = localStorage.getItem("propella_user");
+      if (storedUser) {
+        try {
+          const userData = JSON.parse(storedUser);
+          if (userData.ref) {
+            setEnteredReferralCode(userData.ref);
+          }
+        } catch {
+          // Ignore parse errors
+        }
+      }
+    }
+  }, []);
   const [showPassword, setShowPassword] = useState(false);
 
   // Resend timer countdown
@@ -94,8 +125,8 @@ export function WaitlistModal({
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = "First name is required";
+    if (!formData.username.trim()) {
+      newErrors.username = "Username is required";
     }
 
     if (!formData.email.trim()) {
@@ -131,7 +162,8 @@ export function WaitlistModal({
     const result = await registerUser({
       email: formData.email,
       password: formData.password,
-      username: formData.email.split("@")[0],
+      username: formData.username,
+      referred_by: enteredReferralCode || undefined,
     });
 
     if (result.success) {
@@ -188,7 +220,7 @@ export function WaitlistModal({
 
     // 3. Create exam profile
     const profileResult = await createExamProfile({
-      firstName: formData.firstName,
+      username: formData.username,
       writingJamb: formData.writingJamb,
       subjects: formData.subjects,
       phone: formData.phone || undefined,
@@ -199,13 +231,21 @@ export function WaitlistModal({
       // Don't block success — profile can be completed later
     }
 
+    // 4. Fetch user data to get referral code from endpoint
+    const userResult = await getUser();
+    let fetchedReferralCode = "";
+    if (userResult.success && userResult.data) {
+      fetchedReferralCode = userResult.data.referral_code;
+      setUserReferralCode(fetchedReferralCode);
+    }
+
     toast.success("Welcome to PROPELLA!");
-    onSuccess(formData.email, formData.firstName);
+    onSuccess(formData.email, formData.username, fetchedReferralCode);
 
     // Reset form
     setStep("form");
     setFormData({
-      firstName: "",
+      username: "",
       email: "",
       password: "",
       writingJamb: "",
@@ -336,12 +376,12 @@ export function WaitlistModal({
             <h2 className="text-2xl font-bold mb-2">
               {step === "verify" || step === "verifying"
                 ? "Verify Your Email"
-                : "Join the Waitlist"}
+                : "Create Your Account"}
             </h2>
             <p className="text-gray-400 text-sm">
               {step === "verify" || step === "verifying"
                 ? `Enter the 6-digit code sent to ${formData.email}`
-                : "Be the first to experience AI-powered JAMB preparation. Limited spots available."}
+                : "Start your AI-powered JAMB preparation journey today."}
             </p>
           </div>
 
@@ -350,32 +390,32 @@ export function WaitlistModal({
             {/* ── FORM STEP ── */}
             {step === "form" && (
               <>
-                {/* First Name */}
+                {/* Username */}
                 <div>
                   <Label
-                    htmlFor="firstName"
+                    htmlFor="username"
                     className="text-sm font-medium mb-2 block"
                   >
-                    First Name <span className="text-[#EF4444]">*</span>
+                    Username <span className="text-[#EF4444]">*</span>
                   </Label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                     <Input
-                      id="firstName"
-                      value={formData.firstName}
+                      id="username"
+                      value={formData.username}
                       onChange={(e) =>
                         setFormData((prev) => ({
                           ...prev,
-                          firstName: e.target.value,
+                          username: e.target.value,
                         }))
                       }
-                      placeholder="Enter your first name"
+                      placeholder="Enter your username"
                       className="pl-10 bg-[#0F0C15] border-white/10 focus:border-[#8B5CF6]"
                     />
                   </div>
-                  {errors.firstName && (
+                  {errors.username && (
                     <p className="text-[#EF4444] text-xs mt-1">
-                      {errors.firstName}
+                      {errors.username}
                     </p>
                   )}
                 </div>
@@ -587,6 +627,45 @@ export function WaitlistModal({
                   </div>
                 </div>
 
+                {/* Referral Code (Optional) */}
+                <div>
+                  <Label
+                    htmlFor="referralCode"
+                    className="text-sm font-medium mb-2 block"
+                  >
+                    Referral Code{" "}
+                    <span className="text-gray-500">(Optional)</span>
+                  </Label>
+                  <div className="relative">
+                    <svg
+                      className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                      />
+                    </svg>
+                    <Input
+                      id="referralCode"
+                      type="text"
+                      value={enteredReferralCode}
+                      onChange={(e) =>
+                        setEnteredReferralCode(e.target.value.toUpperCase())
+                      }
+                      placeholder="Enter referral code (e.g., ABC123)"
+                      className="pl-10 bg-[#0F0C15] border-white/10 focus:border-[#8B5CF6] uppercase"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Have a referral code? Enter it above to reward your friend.
+                  </p>
+                </div>
+
                 {/* FIX: Simple button with onClick — no nested form */}
                 <Button
                   type="button"
@@ -658,7 +737,7 @@ export function WaitlistModal({
                       Verifying...
                     </>
                   ) : (
-                    "Verify & Join Waitlist"
+                    "Verify & Sign Up"
                   )}
                 </Button>
 

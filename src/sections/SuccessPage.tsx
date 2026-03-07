@@ -21,6 +21,7 @@ interface SuccessPageProps {
   waitlistCount: number;
   userEmail: string;
   userName: string;
+  referralCode: string;
   onBackToHome: () => void;
 }
 
@@ -28,11 +29,9 @@ export function SuccessPage({
   waitlistCount,
   userEmail,
   userName,
+  referralCode,
   onBackToHome,
 }: SuccessPageProps) {
-  const [referralCode] = useState(() =>
-    Math.random().toString(36).substring(2, 10).toUpperCase(),
-  );
   const [copied, setCopied] = useState(false);
 
   // Get launch date (6th of current month)
@@ -87,7 +86,7 @@ export function SuccessPage({
     frame();
   }, []);
 
-  const referralLink = `https://propella-lp.vercel.app/?ref=${referralCode}&name=${encodeURIComponent(userName)}&email=${encodeURIComponent(userEmail)}`;
+  const referralLink = `https://propella.ng/?ref=${referralCode}&name=${encodeURIComponent(userName)}&email=${encodeURIComponent(userEmail)}`;
   const handleCopy = () => {
     navigator.clipboard.writeText(referralLink);
     setCopied(true);
@@ -96,7 +95,7 @@ export function SuccessPage({
   };
 
   const handleShare = (platform: string) => {
-    const text = `I just joined the PROPELLA waitlist! 🚀 AI-powered JAMB preparation is coming. Join me and be ready to ace your exams! ${referralLink}`;
+    const text = `I just signed up for PROPELLA! 🚀 AI-powered JAMB preparation is here. Join me and be ready to ace your exams! ${referralLink}`;
 
     let url = "";
     switch (platform) {
@@ -177,7 +176,7 @@ export function SuccessPage({
               transition={{ delay: 0.5 }}
               className="text-gray-400 mb-2"
             >
-              Welcome to the PROPELLA waitlist, {userName || "Student"}!
+              Welcome to PROPELLA, {userName || "Student"}!
             </motion.p>
 
             <motion.p
@@ -186,7 +185,7 @@ export function SuccessPage({
               transition={{ delay: 0.6 }}
               className="text-sm text-gray-500 mb-6"
             >
-              You&apos;re #{waitlistCount.toLocaleString()} in line!
+              You&apos;re our {waitlistCount.toLocaleString()}th student!
             </motion.p>
 
             {/* Launch Date Info */}

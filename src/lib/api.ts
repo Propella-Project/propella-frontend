@@ -20,14 +20,26 @@ interface RegisterData {
   email: string;
   password: string;
   username?: string;
+  referral_code?: string;
+  referred_by?: string;
 }
 
 // Type for exam profile creation
 interface ExamProfileData {
-  firstName: string;
+  username: string;
   writingJamb: string;
   subjects?: string[];
   phone?: string;
+}
+
+// Type for user data
+interface UserData {
+  id: number;
+  email: string;
+  username: string;
+  referral_code: string;
+  referred_by?: string;
+  date_joined: string;
 }
 
 // List of endpoints that don't require authentication
@@ -37,6 +49,8 @@ const PUBLIC_ENDPOINTS = [
   "/api/accounts/token/refresh/",
   "/api/accounts/verify-email/",
   "/api/accounts/resend-code/",
+  "/api/accounts/forgot-password/",
+  "/api/accounts/reset-password/",
 ];
 
 function isPublicEndpoint(endpoint: string): boolean {
@@ -161,6 +175,11 @@ export async function registerUser(data: RegisterData) {
   });
 }
 
+// Generate a unique referral code
+export function generateReferralCode(): string {
+  return Math.random().toString(36).substring(2, 10).toUpperCase();
+}
+
 export async function verifyEmail(data: { email: string; code: string }) {
   return apiFetch("/api/accounts/verify-email/", {
     method: "POST",
@@ -175,6 +194,21 @@ export async function resendCode(email: string) {
   });
 }
 
+// Password Reset
+export async function forgotPassword(email: string) {
+  return apiFetch("/api/accounts/forgot-password/", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
+export async function resetPassword(data: { uid: string; token: string; new_password: string }) {
+  return apiFetch(`/api/accounts/reset-password/${data.uid}/${data.token}/`, {
+    method: "POST",
+    body: JSON.stringify({ new_password: data.new_password }),
+  });
+}
+
 // User management (authenticated)
 export async function getAllUsers() {
   return apiFetch("/api/accounts/all-users/", { method: "POST" }); // POST as you specified
@@ -184,6 +218,13 @@ export async function editUser(userId: number, data: any) {
   return apiFetch(`/api/accounts/edit-user/${userId}/`, {
     method: "PATCH",
     body: JSON.stringify(data),
+  });
+}
+
+// User management (authenticated)
+export async function getUser() {
+  return apiFetch<UserData>("/api/accounts/user/", {
+    method: "GET",
   });
 }
 

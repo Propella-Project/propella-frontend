@@ -68,7 +68,16 @@ export function LoginPage() {
           </div>
 
           <div>
-            <Label htmlFor="password">Password</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">Password</Label>
+              <button
+                type="button"
+                onClick={() => navigate("/forgot-password")}
+                className="text-sm text-[#8B5CF6] hover:text-[#A78BFA] transition-colors"
+              >
+                Forgot password?
+              </button>
+            </div>
             <div className="relative mt-1">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
               <Input
