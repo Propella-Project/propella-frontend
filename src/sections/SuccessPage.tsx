@@ -86,7 +86,7 @@ export function SuccessPage({
     frame();
   }, []);
 
-  const referralLink = `https://propella.ng/?ref=${referralCode}&name=${encodeURIComponent(userName)}&email=${encodeURIComponent(userEmail)}`;
+  const referralLink = `https://propella.ng/?code=${referralCode}&name=${encodeURIComponent(userName)}&email=${encodeURIComponent(userEmail)}`;
   const handleCopy = () => {
     navigator.clipboard.writeText(referralLink);
     setCopied(true);

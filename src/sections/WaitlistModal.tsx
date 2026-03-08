@@ -85,7 +85,7 @@ export function WaitlistModal({
   // Get referrer code from URL or localStorage on mount
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const refFromUrl = urlParams.get("ref");
+    const refFromUrl = urlParams.get("code");
 
     if (refFromUrl) {
       setEnteredReferralCode(refFromUrl);
@@ -163,7 +163,7 @@ export function WaitlistModal({
       email: formData.email,
       password: formData.password,
       username: formData.username,
-      referred_by: enteredReferralCode || undefined,
+      referral_code: enteredReferralCode || undefined,
     });
 
     if (result.success) {

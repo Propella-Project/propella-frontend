@@ -25,11 +25,13 @@ export function LoginPage() {
     const result = await login({ email, password });
     setIsLoading(false);
     if (result.success && result.data) {
+      // Store auth tokens in localStorage for dashboard access
+      localStorage.setItem("auth_token", result.data.access);
       localStorage.setItem("access_token", result.data.access);
       localStorage.setItem("refresh_token", result.data.refresh);
       toast.success("Login successful!");
-      // Redirect to welcome page
-      navigate("/welcome");
+      // Redirect directly to dashboard
+      window.location.href = "https://dashboard.propella.ng";
     } else {
       toast.error(result.error || "Login failed");
     }
