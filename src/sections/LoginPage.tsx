@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { login } from "@/lib/api";
+import { setCookie } from "@/lib/cookies";
 import { RocketLogo } from "@/App";
 import { useNavigate } from "react-router-dom";
 
@@ -25,10 +26,16 @@ export function LoginPage() {
     const result = await login({ email, password });
     setIsLoading(false);
     if (result.success && result.data) {
-      // Store auth tokens in localStorage for dashboard access
+      // Store auth tokens in localStorage for this domain
       localStorage.setItem("auth_token", result.data.access);
       localStorage.setItem("access_token", result.data.access);
       localStorage.setItem("refresh_token", result.data.refresh);
+      
+      // Also set cookies for cross-subdomain access (dashboard.propella.ng)
+      setCookie("auth_token", result.data.access, 7);
+      setCookie("access_token", result.data.access, 7);
+      setCookie("refresh_token", result.data.refresh, 7);
+      
       toast.success("Login successful!");
       // Redirect directly to dashboard
       window.location.href = "https://dashboard.propella.ng";

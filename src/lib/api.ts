@@ -1,4 +1,6 @@
 // PROPELLA API Client
+import { getCookie } from "./cookies";
+
 const API_BASE_URL = ""; // Use relative URLs - Vercel proxies to backend
 
 interface ApiResponse<T = unknown> {
@@ -64,7 +66,8 @@ async function apiFetch<T>(
   options: RequestInit = {},
 ): Promise<ApiResponse<T>> {
   const url = `${API_BASE_URL}${endpoint}`;
-  const token = localStorage.getItem("access_token");
+  // Check localStorage first, fallback to cookies (for cross-subdomain access)
+  const token = localStorage.getItem("access_token") || getCookie("access_token");
   const headers: HeadersInit = {
     "Content-Type": "application/json",
     Accept: "application/json",
