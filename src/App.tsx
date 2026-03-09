@@ -3,6 +3,7 @@ import {
   Routes,
   Route,
   useSearchParams,
+  Navigate,
 } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -13,7 +14,6 @@ import { Features } from "@/sections/Features";
 import { WaitlistModal } from "@/sections/WaitlistModal";
 import { SuccessPage } from "@/sections/SuccessPage";
 import { WelcomePage } from "@/sections/WelcomePage";
-import { LoginPage } from "@/sections/LoginPage";
 import { ForgotPasswordPage } from "@/sections/ForgotPasswordPage";
 import { ResetPasswordPage } from "@/sections/ResetPasswordPage";
 import { Toaster } from "@/components/ui/sonner";
@@ -219,8 +219,8 @@ function AppContent() {
         onClose={() => setShowWaitlistModal(false)}
         onLoginClick={() => {
           setShowWaitlistModal(false);
-          // Navigate to login page
-          window.location.href = "https://propella.ng";
+          // Navigate to dashboard
+          window.location.href = "https://dashboard.propella.ng";
         }}
         onSuccess={(email: string, name: string, referralCode: string) => {
           setShowWaitlistModal(false);
@@ -230,6 +230,14 @@ function AppContent() {
       <Toaster />
     </div>
   );
+}
+
+// Redirect to external dashboard
+function LoginRedirect() {
+  useEffect(() => {
+    window.location.href = "https://dashboard.propella.ng";
+  }, []);
+  return null;
 }
 
 // Wrapper for WelcomePage to extract query params
@@ -255,7 +263,7 @@ function App() {
       <Routes>
         <Route path="/" element={<AppContent />} />
         <Route path="/welcome" element={<WelcomePageWrapper />} />
-        <Route path="/login" element={<LoginPage />} />
+        <Route path="/login" element={<LoginRedirect />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
       </Routes>
