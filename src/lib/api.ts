@@ -1,7 +1,7 @@
 // PROPELLA API Client
 import { getCookie } from "./cookies";
 
-const API_BASE_URL = ""; // Use relative URLs - Vercel proxies to backend
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ""; // Secure env var, fallback to relative
 
 interface ApiResponse<T = unknown> {
   success: boolean;

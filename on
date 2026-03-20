@@ -1,9 +1,0 @@
-[33mcommit 64028aab4a65441bda6d3061c39193fe55374da2[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
-Author: Rosvic <rosemaryoguezuonu@gmail.com>
-Date:   Wed Mar 4 18:22:42 2026 +0100
-
-    fix: remove node_modules from git tracking
-
- src/sections/SuccessPage.tsx | 2 [32m+[m[31m-[m
- src/sections/WelcomePage.tsx | 2 [32m+[m[31m-[m
- 2 files changed, 2 insertions(+), 2 deletions(-)
